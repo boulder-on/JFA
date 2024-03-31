@@ -13,8 +13,6 @@ package jpassport.test.performance;
 
 import jpassport.test.structs.TestStruct;
 
-import java.lang.foreign.MemorySegment;
-
 public class PureJavaPerf implements PerfTest{
     @Override
     public double sumD(double d, double d2) {

@@ -5,10 +5,6 @@ import jpassport.Utils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.lang.foreign.GroupLayout;
-import java.lang.foreign.MemoryLayout;
-import java.lang.foreign.ValueLayout;
-import java.util.Arrays;
 import java.util.stream.IntStream;
 
 import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
