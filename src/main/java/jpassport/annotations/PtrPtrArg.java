@@ -19,13 +19,10 @@ import java.lang.annotation.Target;
 /**
  * This annotation is for a 2-D array that should be passed as a pointer to a list of pointers. Without
  * this annotation a 2-D array will be copied as a single large memory block in row major order.
- *
- * double sumMatD(int rows, int cols, double mat[rows][cols]) <- C function
- * double sumMatD(int rows, int cols, double[][] mat);  <- Java interface
- *
- * double sumMatD(const int rows, const int cols, const double** mat) <- C function
- * double sumMatD(int rows, int cols, @PtrPtrArg double[][] mat);  <- Java interface
- *
+ * double sumMatD(int rows, int cols, double mat[rows][cols]) - C function
+ * double sumMatD(int rows, int cols, double[][] mat);  - Java interface
+ * double sumMatD(const int rows, const int cols, const double** mat) - C function
+ * double sumMatD(int rows, int cols, @PtrPtrArg double[][] mat);  - Java interface
  * This annotation is only observed for array arguments.
  */
 @Retention(RetentionPolicy.RUNTIME)

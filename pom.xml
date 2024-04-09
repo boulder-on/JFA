@@ -12,8 +12,27 @@
     <description>A Java library for interfacing with the foreign linker API.</description>
     <url>https://github.com/boulder-on/JPassport#readme</url>
 
-    <name>JPassport</name>
+    <name>${project.groupId}:${project.artifactId}</name>
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
 
+    <developers>
+        <developer>
+            <name>Duncan McLean</name>
+            <email>duncan.mclean@gmail.com</email>
+            <organization>Duncan McLean</organization>
+            <organizationUrl>https://github.com/boulder-on</organizationUrl>
+        </developer>
+    </developers>
+    <scm>
+        <connection>scm:git:git://github.com/boulder-on/JPassport</connection>
+        <developerConnection>scm:git:ssh://github.com/boulder-on/JPassport</developerConnection>
+        <url>http://github.com/boulder-on/JPassport</url>
+    </scm>
     <properties>
         <maven.compiler.source>22</maven.compiler.source>
         <maven.compiler.target>22</maven.compiler.target>
@@ -82,70 +101,104 @@
                     </configuration>
                 </plugin>
 
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>2.2.1</version>
-                    <executions>
-                        <execution>
-                            <id>attach-sources</id>
-                            <goals>
-                                <goal>jar-no-fork</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>2.9.1</version>
-                    <executions>
-                        <execution>
-                            <id>attach-javadocs</id>
-                            <goals>
-                                <goal>jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-<!--                <plugin>-->
-<!--                    <groupId>org.apache.maven.plugins</groupId>-->
-<!--                    <artifactId>maven-gpg-plugin</artifactId>-->
-<!--                    <version>1.5</version>-->
-<!--                    <executions>-->
-<!--                        <execution>-->
-<!--                            <id>sign-artifacts</id>-->
-<!--                            <phase>verify</phase>-->
-<!--                            <goals>-->
-<!--                                <goal>sign</goal>-->
-<!--                            </goals>-->
-<!--                        </execution>-->
-<!--                    </executions>-->
-<!--                </plugin>-->
-<!--                <plugin>-->
-<!--                    <groupId>org.sonatype.plugins</groupId>-->
-<!--                    <artifactId>nexus-staging-maven-plugin</artifactId>-->
-<!--                    <version>1.6.7</version>-->
-<!--                    <extensions>true</extensions>-->
-<!--                    <configuration>-->
-<!--                        <serverId>ossrh</serverId>-->
-<!--                        <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>-->
-<!--                        <autoReleaseAfterClose>true</autoReleaseAfterClose>-->
-<!--                    </configuration>-->
-<!--                </plugin>-->
-<!--                <plugin>-->
-<!--                    <groupId>org.sonatype.central</groupId>-->
-<!--                    <artifactId>central-publishing-maven-plugin</artifactId>-->
-<!--                    <version>0.4.0</version>-->
-<!--                    <extensions>true</extensions>-->
-<!--                    <configuration>-->
-<!--                        <publishingServerId>central</publishingServerId>-->
-<!--                        <tokenAuth>true</tokenAuth>-->
-<!--                    </configuration>-->
-<!--                </plugin>-->
+                <!--                <plugin>-->
+                <!--                    <groupId>org.apache.maven.plugins</groupId>-->
+                <!--                    <artifactId>maven-gpg-plugin</artifactId>-->
+                <!--                    <version>1.5</version>-->
+                <!--                    <executions>-->
+                <!--                        <execution>-->
+                <!--                            <id>sign-artifacts</id>-->
+                <!--                            <phase>verify</phase>-->
+                <!--                            <goals>-->
+                <!--                                <goal>sign</goal>-->
+                <!--                            </goals>-->
+                <!--                        </execution>-->
+                <!--                    </executions>-->
+                <!--                </plugin>-->
+                <!--                <plugin>-->
+                <!--                    <groupId>org.sonatype.central</groupId>-->
+                <!--                    <artifactId>central-publishing-maven-plugin</artifactId>-->
+                <!--                    <version>0.4.0</version>-->
+                <!--                    <extensions>true</extensions>-->
+                <!--                    <configuration>-->
+                <!--                        <publishingServerId>central</publishingServerId>-->
+                <!--                        <tokenAuth>true</tokenAuth>-->
+                <!--                    </configuration>-->
+                <!--                </plugin>-->
+
 
             </plugins>
         </pluginManagement>
     </build>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>central</id>
+            <url>file://tmp</url>
+        </snapshotRepository>
+        <repository>
+            <id>central</id>
+
+            <url>file://tmp</url>
+        </repository>
+    </distributionManagement>
+    <profiles>
+        <profile>
+            <id>release-sign-artifacts</id>
+            <activation>
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <!--                    <version>2.9.1</version>-->
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>2.2.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

@@ -46,7 +46,8 @@ public class PassportFactory
     {
         if (!Passport.class.isAssignableFrom(interfaceClass)) {
             throw new IllegalArgumentException(
-                    StringTemplate.STR."Interface ({interfaceClass.getSimpleName()}) of library={libraryName} does not extend {Passport.class.getSimpleName()}");
+                    String.format("Interface (%s) of library=%s does not extend %s",
+                            interfaceClass.getSimpleName(), libraryName, Passport.class.getSimpleName()));
         } else {
             return buildClass(libraryName, interfaceClass);
         }
