@@ -37,7 +37,7 @@ public class PassportFactory
      * <p>This version also supports Record -> struct conversions.
      *
      * @param libraryName The library name (the file name of the shared library without extension on all platforms,
-     *                    without lib prefix on Linux and Mac).
+     *                    without lib prefix on Linux and Mac). Use null to load system method calls (ex. malloc)
      * @param interfaceClass The class to wrap.
      * @param <T> Any interface that extends Passport
      * @return A class linked to call into a DLL or SO using the Foreign Linker.
@@ -60,7 +60,7 @@ public class PassportFactory
      * <p>This method does not support Record -> struct conversions.</p>
      *
      * @param libraryName The library name (the file name of the shared library without extension on all platforms,
-     *                    without lib prefix on Linux and Mac).
+     *                    without lib prefix on Linux and Mac). Use null to load system method calls (ex. malloc)
      * @param interfaceClass The class to wrap.
      * @param <T> Any interface that extends Passport
      * @return A class linked to call into a DLL or SO using the Foreign Linker.
@@ -90,7 +90,7 @@ public class PassportFactory
      * This method looks up the methods in the requested native library that match non-static
      * methods in the given interface class.
      *
-     * @param libName Name of the native library to load.
+     * @param libName Name of the native library to load, of null if the methods will be system method (ex. malloc).
      * @param interfaceClass The interface class to use as a reference for loading methods.
      * @return A map of Name to method handle pairs for the methods in the interface class.
      */
@@ -108,7 +108,8 @@ public class PassportFactory
         List<Method> interfaceMethods = getDeclaredMethods(interfaceClass);
         HashMap<String, MethodHandle> methodMap = new HashMap<>();
 
-        SymbolLookup lookup = SymbolLookup.loaderLookup();
+        //if no library name is given then it must be a system library
+        SymbolLookup lookup = libName == null ? cLinker.defaultLookup() : SymbolLookup.loaderLookup();
 
         for (Method method : interfaceMethods) {
             Class<?> retType = method.getReturnType();

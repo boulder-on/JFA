@@ -11,19 +11,28 @@ is available. Given a header file JExtract will build the classes needed to acce
 a large header file then JExtract is likely an easier tool for you to use if you don't already have interfaces
 defined for JNA.
 
-**Java 22** is required to use this library. There are separate branches for Java 17 to 22.
+**Java 22 and later** are required to use this library. There are separate branches for Java 17 to 22.
 
 The Foreign Linker API is final in Java 22.
 
 # Getting Started
 
+### Source
 Download the source and run the maven build.
+
+### Maven
+        <dependency>
+            <groupId>io.github.boulder-on</groupId>
+            <artifactId>JPassport</artifactId>
+            <version>1.0.1-22</version>
+        </dependency>
+
 
 # Calling a native library example
 
 The native api refers to these a "down calls".
 
-C:
+C, compiled into libforeign.dll or libforeign.so:
 ```
 int string_length(const char* string)
 {
@@ -46,14 +55,14 @@ public interface Linked extends Passport {
    double sumArrD(double[] arr, int count);
 }
 ```
-Java Usage for dynamic class creation:
+Standard usage - writes a .java file to disk, compiles and loads:
 ```Java
-Linked L = PassportFactory.link("libforeign", Linked.class);
+Linked L = PassportFactory.link("libforeign", Linked.class); 
 int n = L.string_length("hello");
 double sum = L.sumArrD(new double[] {1, 2, 3}, 3);
 ```
 
-Java Usage to create a .java file for inclusion in your codebase:
+Static usage - writes a .java file to disk that you can include in your codebase:
 ```java
 PassportWriter pw = new PassportWriter(Linked.class);
 pw.writeModule(Path.of('output_location'));
@@ -65,7 +74,7 @@ Linked l = new Linked_Impl(PassportFactory.loadMethodHandles("libforeign", Linke
 
 In order to use this library you will need to provide the VM these arguments:
 
-__-Djava.library.path=[path to lib] --enable-native-access jpassport --enable-preview__
+__-Djava.library.path=[path to lib] --enable-native-access jpassport__
 
 JPassport works by writing a class that implements your interface, compiling it and passing it back to you.
 By default, the classes are written to the folder specified by System.getProperty("java.io.tmpdir").
@@ -80,7 +89,7 @@ as a pointer into another function. This technique is used to create call-backs.
 ```java
 public interface CallbackNative extends Passport
 {
-    void passMethod(MemorySegment functionPtr);
+    void passMethod(FunctionPtr functionPtr);
 }
 
 public class MyCallback
@@ -92,13 +101,13 @@ public class MyCallback
 }
 
 MyCallback cb = new MyCallback();
-MemorySegment functionPtr = PassportFactory.createCallback(cb, "callbackMethod");
+FunctionPtr functionPtr = PassportFactory.createCallback(cb, "callbackMethod");
 
 CallbackNative cbn = PassportFactory.link("libforeign", CallbackNative.class);
 cbn.passMethod(functionPtr);
 ```
 
-At the moment this does not work for static method - that will be an easy enhancement.
+At the moment this does not work for static methods.
 
 # Performance
 Performance was tested vs JNA, JNA Direct, and pure Java.
@@ -147,9 +156,14 @@ Performance of a method that passes an array of doubles. The gap here
 | char[][]          | byte[][]              |
 | structs           | Records               |
 | char*, void *     | MemoryBlock           |
-| n/a               | Arena                 |
+| n/a               | Arena (see below)     |
 
 Any C argument that is defined with ** must be annotated with @PTrPtrArg in your Java interface.
+
+An **Arena** object can be added to any interface method signature. JPassport will use
+that Arena to allocate memory instead of creating its own Arena. This can help with
+efficiency by allowing you to hold a large block of memory open longer, rather
+than regularly re-allocating it. Only one Arena can be passed.
 
 Return types can be:
 1. double
@@ -167,7 +181,7 @@ The argument also needs to be passed as an array of length one. Ex.
 
 C:
 ```
-void readB(int *val, int set)
+void setInt(int *val, int set)
 {
     *val = set;
 }
@@ -176,12 +190,12 @@ void readB(int *val, int set)
 Java:
 ```Java
 public interface Test extends Passport {
-  void readD(@RefArg int[] d, int set);
+  void setInt(@RefArg int[] d, int set);
 }
 
 Linked lib = PassportFactory.link("foreign_link", Test.class);
 int[] ref = new int[1];
-lib.readD(ref, 10);
+lib.setInt(ref, 10);
 ```
 
 Without the @RefArg, when ref[] is returned it will not have been updated.
@@ -240,7 +254,7 @@ public interface PerfTest extends Passport {
 The @StructPadding annotation here is optional and maintained for legacy reasons (and in case my
 calculations for padding a wrong on some platforms). Also, I guess it's possible that you have a 
 very strange struct where you need bespoke padding. In general, the library will automatically 
-add the padding that it thinks is required. If you use @StructPadding then that tell JPassport 
+add the padding that it thinks is required. If you use @StructPadding that tells JPassport 
 how much padding to put before or after a struct member (negative numbers indicate pre-member 
 padding). There are also separate annotation values for different platforms (windowsBytes, macBytes, linuxBytes). 
 
@@ -258,13 +272,13 @@ JPassport uses annotations as code generation hints. The available annotations a
 | Annotation                   | Usage          | Meaning                                                                                                                                                                |
 |------------------------------|----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Array                        | Record members | If a C Struct takes a pointer to a primative array, this allows you to say what the size of the primative array is for RefArgs.                                        |
-| NotRequired                  | Methods | If a function could not be found in the native library then no exception will be thrown. Use hasMethod("") to determine if the function was found. |                    |
+| NotRequired                  | Methods | If a function could not be found in the native library then no exception will be thrown. Use hasMethod("") to determine if the function was found.                     |                    |
 | Ptr                          | Record members | If a C Struct takes a pointer to a primative or another struct then use this annotation.                                                                               |
 | PtrPtrArg                    | Function argument| Any C function that takes a **<arg> must be annotated with this.                                                                                                       |
 | RefArg                       | Function argument | Any C function that changes the contents of a pointer must be annotated with this to force the read back of the parameter                                              |
 | RefArg (read_back_only=true) | Function argument | If you only need to pass a blank memory space for a method to fill, use this optimization, otherwise the values in the array are copied to memory that is passed to C. |
 | StructPadding                | Record members | See the Javadoc or the above section on structs and records.                                                                                                           |
-| Trivial                      | Methods  | Removes some overhead for calling a native method. Cannot be used when callbacks are used. |
+| Critical                     | Methods  | Removes some overhead for calling a native method. Cannot be used when callbacks are used. See the JDK's Linker.Option.critical for more details.                      |
 # Limitations
 
 * Only arrays of Records of length 1 work.
@@ -313,13 +327,8 @@ double[] testReturnPointer(int count) {
 ```
 # Dependencies
 
-JPassport itself only requires **Java 22** to build and run. There are separate Java 17-20 branches. 
+JPassport itself only requires **Java 22 or later** to build and run. There are separate Java 17-20 branches. 
 
-The testing classes require:
-
-* JNA 5.8.0
-* JUnit 5.4.2 (later versions of JUnit do not play nice with modules yet)
-* Apache Commons CSV 1.8 (only used to output performance data)
 
 # Work To-Do
 Roughly in order of importance
@@ -327,10 +336,11 @@ Roughly in order of importance
 1. Support arrays of Records 
 2. Support returning a Record
 3. Use the Java Micro-benchmarking harness.
-4. Compile classes in memory instead of from disk
-   - This is a challenge because the code needs to be compiled as a module
+4. Use the new Classfile API to build the class in memory
 
 # Release Notes
+- 1.0.1-22
+  - Fixed an issue where System libraries could not be loaded (ex. malloc).
 - 1.0.0-22
   - Full 1.0 since Java 22 has gone GA and the foreign function API is now official
   - Added MemoryBlock as a method argument to pass allocated memory to a foreign function.
