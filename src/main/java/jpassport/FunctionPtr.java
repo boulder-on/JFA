@@ -1,5 +1,6 @@
 package jpassport;
 
+import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 
 /**
@@ -7,8 +8,17 @@ import java.lang.foreign.MemorySegment;
  * derives from GenericPointer, you can pass it to a method.
  */
 public class FunctionPtr extends GenericPointer {
-    FunctionPtr(MemorySegment ptr)
+
+    private final Arena arena; //The arena that was used to allocate the function pointer
+
+    /**
+     *
+     * @param arena The arena used to allocate the function pointer
+     * @param ptr The function pointer
+     */
+    FunctionPtr(Arena arena, MemorySegment ptr)
     {
         super(ptr);
+        this.arena = arena;
     }
 }

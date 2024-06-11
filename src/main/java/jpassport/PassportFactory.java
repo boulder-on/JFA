@@ -189,7 +189,7 @@ public class PassportFactory
     {
         var methods = getDeclaredMethods(ob.getClass());
 
-        methods = methods.stream().filter(m -> m.getName().equals(methodName)).collect(Collectors.toList());
+        methods = methods.stream().filter(m -> m.getName().equals(methodName)).toList();
         if (methods.isEmpty())
             throw new IllegalArgumentException("Could not find method " + methodName + " in class " + ob.getClass().getName());
         else if (methods.size() > 1)
@@ -221,7 +221,7 @@ public class PassportFactory
             var handleToCall = handle.bindTo(ob);
 
             var scope = Arena.ofAuto();
-            return new FunctionPtr(Linker.nativeLinker().upcallStub(handleToCall, fd, scope));
+            return new FunctionPtr(scope, Linker.nativeLinker().upcallStub(handleToCall, fd, scope));
         }
         catch (NoSuchMethodException | IllegalAccessException ex)
         {

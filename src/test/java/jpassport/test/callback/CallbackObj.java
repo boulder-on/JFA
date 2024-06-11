@@ -1,5 +1,6 @@
 package jpassport.test.callback;
 
+import jpassport.FunctionPtr;
 import jpassport.PassportFactory;
 import jpassport.Utils;
 
@@ -15,9 +16,9 @@ public class CallbackObj {
         return (int) (n + m);
     }
 
-    public MemorySegment getAsFunctionPtr()
+    public FunctionPtr getAsFunctionPtr()
     {
-        return PassportFactory.createCallback(this, "callback").getPtr();
+        return PassportFactory.createCallback(this, "callback");
     }
 
     public int sum = 0;
@@ -32,8 +33,8 @@ public class CallbackObj {
         sum = Arrays.stream(vals).sum();
     }
 
-    public MemorySegment getAsFunctionArrPtr()
+    public FunctionPtr getAsFunctionArrPtr()
     {
-        return PassportFactory.createCallback(this, "callbackArr").getPtr();
+        return PassportFactory.createCallback(this, "callbackArr");
     }
 }

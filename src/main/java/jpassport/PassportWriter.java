@@ -145,7 +145,8 @@ public class PassportWriter<T extends Passport>
                                     private void init(){
                                 """);
 
-        if (interfaceClass.getModule().getName().equals("jpassport"))
+        if (interfaceClass.getModule() == null || interfaceClass.getModule().getName() == null ||
+                interfaceClass.getModule().getName().equals("jpassport"))
         {
             m_moduleSource.append("""
                     module foreign.caller {

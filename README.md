@@ -81,23 +81,22 @@ By default, the classes are written to the folder specified by System.getPropert
 If you provide the system property __"jpassport.build.home"__ then the classes will be written and
 compiled there.
 
-# Passing function pointers to native code example
+# Callback example
 
 The native API refers to these as "up calls". It's common in native programming to pass a function
-as a pointer into another function. This technique is used to create call-backs. 
+as a pointer into another function. This technique is used to create call-backs.
 
 ```java
-public interface CallbackNative extends Passport
-{
-    void passMethod(FunctionPtr functionPtr);
+import jpassport.FunctionPtr;
+
+public interface CallbackNative extends Passport {
+  void passMethod(FunctionPtr functionPtr);
 }
 
-public class MyCallback
-{
-    public void callbackMethod(int value, String name)
-    {
-        System.out.println(value + ". " + name);
-    }
+public class MyCallback {
+  public void callbackMethod(int value, String name) {
+    System.out.println(value + ". " + name);
+  }
 }
 
 MyCallback cb = new MyCallback();
@@ -108,6 +107,10 @@ cbn.passMethod(functionPtr);
 ```
 
 At the moment this does not work for static methods.
+
+__NOTE:__ If your callback method uses Java synchronization, or interacts with object member variables
+then the thread must be a Java thread. In testing I've done, if a callback is called from a 
+normal Linux Thread then synchronized blocks do not work.
 
 # Performance
 Performance was tested vs JNA, JNA Direct, and pure Java.
